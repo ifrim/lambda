@@ -34,7 +34,7 @@ e
     | e APPLICATION e
         { $$ = {node: 'APPLICATION', e1: $1, e2: $3}; }
     | VAR 
-		{ $$ = yytext; }
+		{ $$ = {node: 'VAR', value: $1}; }
 	| '(' e ')'
 		{ $$ = $2; }
     ;
