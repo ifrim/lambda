@@ -1,7 +1,7 @@
 {
   "name": "lambda",
   "version": "0.0.0",
-  "description": "",
+  "description": "A small research programming language based on lambda calculus.",
   "main": "lambda.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
