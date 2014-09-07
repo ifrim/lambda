@@ -3,7 +3,7 @@ var fs = require('fs'),
 	bnf,
 	parser;
 
-bnf = fs.readFileSync('grammar.jison', 'utf8');
+bnf = fs.readFileSync('./language-files/grammar.jison', 'utf8');
 parser = new jison.Parser(bnf);
 
 module.exports = parser;

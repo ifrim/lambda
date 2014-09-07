@@ -1,7 +1,10 @@
 var fs = require('fs'),
-	parser = require('./parser.js'),
-	source = '',
-	util = require('util');
+	parser = require('./language-files/parser.js'),
+	util = require('util'),
+	print = function(obj) {
+		console.log(util.inspect(obj, {depth: null}));
+	},
+	source = '';
 
 if(process.argv[2]) {
 	source = fs.readFileSync('./' + process.argv[2], 'utf8');
@@ -9,4 +12,58 @@ if(process.argv[2]) {
 
 var ast = parser.parse(source);
 
-console.log(util.inspect(ast, {depth: null}));
+function show(ast) {
+	switch(ast.node) {
+		case 'VAR': return ast.value; break;
+		case 'LAMBDA': return '\\' + ast.var + '.' + show(ast.body); break;
+		case 'APPLICATION': return '(' + show(ast.e1) + ' ' + show(ast.e2) + ')'; break;
+	}
+}
+
+/**
+ * In expression 'e1' substitutes the variable 'v' with expression 'e2'
+ */
+function s(e1, v, e2) {
+	switch(e1.node) {
+		case 'VAR':
+			return e1.value === v ? e2 : e1;
+		break;
+		case 'LAMBDA':
+			e1.body = s(e1.body, v, e2);
+			return e1;
+		break;
+		case 'APPLICATION':
+			e1.e1 = s(e1.e1, v, e2);
+			e1.e2 = s(e1.e2, v, e2);
+			return e1;
+		break;
+	}
+}
+
+function eval(ast) {
+	var result;
+
+	switch(ast.node) {
+		case 'VAR': result = ast; break;
+		case 'LAMBDA': result = ast; break;
+		case 'APPLICATION': 
+			if(ast.e1.node === 'APPLICATION' || ast.e2.node === 'APPLICATION') {
+				ast.e1 = eval(ast.e1);
+				ast.e2 = eval(ast.e2);
+				result = eval(ast);
+			} else {
+				result = ast.e1.node === 'LAMBDA' ?
+					s(ast.e1.body, ast.e1.var, ast.e2) :
+					ast;
+			}
+			break;
+	}
+
+	return result.node === 'APPLICATION' ? eval(result) : result;
+}
+
+//print(ast);
+//console.log(show(ast));
+//console.log('evaluation');
+//print(eval(ast));
+console.log(show(ast) + ' => ' + show(eval(ast)));
