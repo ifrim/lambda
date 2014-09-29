@@ -7,9 +7,10 @@
 [a-zA-Z]+      { return 'VAR'; }
 \s+            { return 'APPLICATION'; }
 \\             { return 'LAMBDA'; }
-'.'            { return '.' }
-'('            { return '(' }
-')'            { return ')' }
+\n             { return 'NEWLINE'; }
+'.'            { return '.'; }
+'('            { return '('; }
+')'            { return ')'; }
 <<EOF>>        { return 'EOF'; }
 
 /lex
@@ -19,13 +20,22 @@
 %left 'APPLICATION'
 %right 'LAMBDA'
 
-%start expressions
+%start program
 
 %% /* language grammar */
 
-expressions
-    : e EOF
-         { return $1; }
+program
+    : instructions EOF
+        { return $1; }
+    ;
+
+instructions
+    : e NEWLINE
+        { $$ = $1; }
+    | e instructions
+        { $$ = {node: 'INSTRUCTIONS', first: $1, rest: $2}; }
+    | e
+        { $$ = $1; }
     ;
 
 e
@@ -33,7 +43,7 @@ e
         { $$ = {node: 'LAMBDA', var: $2, body: $4}; }
     | e APPLICATION e
         { $$ = {node: 'APPLICATION', e1: $1, e2: $3}; }
-    | VAR 
+    | VAR
         { $$ = {node: 'VAR', value: $1}; }
     | '(' e ')'
         { $$ = $2; }

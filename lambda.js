@@ -17,6 +17,7 @@ function show(ast) {
 		case 'VAR': return ast.value; break;
 		case 'LAMBDA': return '\\' + ast.var + '.' + show(ast.body); break;
 		case 'APPLICATION': return '(' + show(ast.e1) + ' ' + show(ast.e2) + ')'; break;
+        case 'INSTRUCTIONS': return show(ast.first) + '\n' + show(ast.rest); break;
 	}
 }
 
@@ -46,7 +47,7 @@ function eval(ast) {
 	switch(ast.node) {
 		case 'VAR': result = ast; break;
 		case 'LAMBDA': result = ast; break;
-		case 'APPLICATION': 
+		case 'APPLICATION':
 			if(ast.e1.node === 'APPLICATION' || ast.e2.node === 'APPLICATION') {
 				ast.e1 = eval(ast.e1);
 				ast.e2 = eval(ast.e2);
@@ -62,8 +63,18 @@ function eval(ast) {
 	return result.node === 'APPLICATION' ? eval(result) : result;
 }
 
+function evalInstructions(ast) {
+    switch(ast.node) {
+        case 'INSTRUCTIONS':
+            eval(ast.first);
+            return evalInstructions(ast.rest);
+            break;
+        default:
+            return eval(ast);
+            break;
+    }
+}
+
 //print(ast);
-//console.log(show(ast));
-//console.log('evaluation');
-//print(eval(ast));
-console.log(show(ast) + ' => ' + show(eval(ast)));
+console.log(show(ast));
+console.log('=> ' + show(evalInstructions(ast)));
