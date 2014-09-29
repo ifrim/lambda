@@ -4,7 +4,8 @@ var fs = require('fs'),
 	print = function(obj) {
 		console.log(util.inspect(obj, {depth: null}));
 	},
-	source = '';
+	source = '',
+    scope = {};
 
 if(process.argv[2]) {
 	source = fs.readFileSync('./' + process.argv[2], 'utf8');
@@ -18,6 +19,7 @@ function show(ast) {
 		case 'LAMBDA': return '\\' + ast.var + '.' + show(ast.body); break;
 		case 'APPLICATION': return '(' + show(ast.e1) + ' ' + show(ast.e2) + ')'; break;
         case 'INSTRUCTIONS': return show(ast.first) + '\n' + show(ast.rest); break;
+        case 'ASSIGNMENT': return ast.name + ' = ' + show(ast.expr); break;
 	}
 }
 
@@ -28,16 +30,16 @@ function s(e1, v, e2) {
 	switch(e1.node) {
 		case 'VAR':
 			return e1.value === v ? e2 : e1;
-		break;
+            break;
 		case 'LAMBDA':
 			e1.body = s(e1.body, v, e2);
 			return e1;
-		break;
+            break;
 		case 'APPLICATION':
 			e1.e1 = s(e1.e1, v, e2);
 			e1.e2 = s(e1.e2, v, e2);
 			return e1;
-		break;
+            break;
 	}
 }
 
@@ -66,8 +68,12 @@ function eval(ast) {
 function evalInstructions(ast) {
     switch(ast.node) {
         case 'INSTRUCTIONS':
-            eval(ast.first);
+            evalInstructions(ast.first);
             return evalInstructions(ast.rest);
+            break;
+        case 'ASSIGNMENT':
+            scope[ast.name] = eval(ast.expr);
+            return scope[ast.name];
             break;
         default:
             return eval(ast);
@@ -78,3 +84,4 @@ function evalInstructions(ast) {
 //print(ast);
 console.log(show(ast));
 console.log('=> ' + show(evalInstructions(ast)));
+console.log('SCOPE', scope);

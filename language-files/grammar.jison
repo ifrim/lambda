@@ -4,10 +4,11 @@
 %%
 
 \s*\n\s*       {/*ignore*/ }
+\s*\=\s*       { return '='; }
+\n             { return 'NEWLINE'; }
 [a-zA-Z]+      { return 'VAR'; }
 \s+            { return 'APPLICATION'; }
 \\             { return 'LAMBDA'; }
-\n             { return 'NEWLINE'; }
 '.'            { return '.'; }
 '('            { return '('; }
 ')'            { return ')'; }
@@ -30,12 +31,19 @@ program
     ;
 
 instructions
-    : e NEWLINE
+    : instruction NEWLINE
         { $$ = $1; }
-    | e instructions
+    | instruction instructions
         { $$ = {node: 'INSTRUCTIONS', first: $1, rest: $2}; }
-    | e
+    | instruction
         { $$ = $1; }
+    ;
+
+instruction
+    : e
+        { $$ = $1; }
+    | VAR '=' e
+        { $$ = {node: 'ASSIGNMENT', name: $1, expr: $3}; }
     ;
 
 e
