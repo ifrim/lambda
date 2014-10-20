@@ -1,17 +1,31 @@
 var fs = require('fs'),
 	parser = require('./language-files/parser.js'),
+	repl = require('repl'),
 	util = require('util'),
 	print = function(obj) {
 		console.log(util.inspect(obj, {depth: null}));
 	},
+	ast,
 	source = '',
     scope = {};
 
 if(process.argv[2]) {
 	source = fs.readFileSync('./' + process.argv[2], 'utf8');
+	ast = parser.parse(source);
+	console.log(show(ast));
+	console.log('=> ' + show(evalInstructions(ast)));
+	console.log('SCOPE', scope);
+} else {
+	repl.start({
+		prompt: 'lambda> ',
+		ignoreUndefined: true,
+		eval: function(cmd, context, file, callback) {
+			var ast = parser.parse(cmd.substring(1, cmd.length - 2));
+			console.log(show(evalInstructions(ast)));
+			callback(null, undefined);
+		}
+	});
 }
-
-var ast = parser.parse(source);
 
 function show(ast) {
 	switch(ast.node) {
@@ -80,8 +94,3 @@ function evalInstructions(ast) {
             break;
     }
 }
-
-//print(ast);
-console.log(show(ast));
-console.log('=> ' + show(evalInstructions(ast)));
-console.log('SCOPE', scope);
