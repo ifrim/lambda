@@ -10,5 +10,8 @@
   "license": "BSD-2-Clause",
   "devDependencies": {
     "jison": "~0.4.15"
+  },
+  "dependencies": {
+    "lodash": "^2.4.1"
   }
 }

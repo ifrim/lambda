@@ -50,9 +50,9 @@ e
     : LAMBDA VAR '.' e
         { $$ = {node: 'LAMBDA', var: $2, body: $4}; }
     | e APPLICATION e
-        { $$ = {node: 'APPLICATION', e1: $1, e2: $3}; }
+        { $$ = {node: 'APPLICATION', left: $1, right: $3}; }
     | VAR
-        { $$ = {node: 'VAR', value: $1}; }
+        { $$ = {node: 'VAR', name: $1}; }
     | '(' e ')'
         { $$ = $2; }
     ;
